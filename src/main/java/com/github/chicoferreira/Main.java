@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -91,7 +92,7 @@ public class Main {
 
                 List<Tweet> data = twitterApi.tweets().usersIdTweets(followerId)
                                              .tweetFields(Set.of("created_at"))
-                                             .maxResults(5)
+                                             .maxResults(5) // TwitterAPI does not allow less than 5 tweets fetched
                                              .execute()
                                              .getData();
 
@@ -100,7 +101,7 @@ public class Main {
                     tweet = data.get(0);
                 }
 
-                userData.add(new UserData(follower, tweet));
+                userData.add(new UserData(follower, tweet, follower.getProtected()));
                 System.out.print("\r(" + current + "/" + size + ") Fetching @" + followerUsername + " (" + followerName + ") with id " + followerId + " https://twitter.com/" + followerUsername);
                 current++;
             }
@@ -110,17 +111,20 @@ public class Main {
 
         System.out.print("\rFetching complete.\n\n");
         System.out.println("Sorting user data by last tweet date...");
-        userData.sort((a, b) -> {
-            Tweet aTweet = a.lastTweet();
-            Tweet bTweet = b.lastTweet();
-            if (aTweet == null) {
+
+        Comparator<UserData> comparator = (a, b) -> {
+            if (a.lastTweet == null && b.lastTweet == null) {
+                return a.isProtectedUser ? 1 : -1;
+            } else if (a.lastTweet == null) {
                 return -1;
-            } else if (bTweet == null) {
+            } else if (b.lastTweet == null) {
                 return 1;
             } else {
-                return aTweet.getCreatedAt().compareTo(bTweet.getCreatedAt());
+                return a.lastTweet.getCreatedAt().compareTo(b.lastTweet.getCreatedAt());
             }
-        });
+        };
+
+        userData.sort(comparator);
         System.out.println();
 
         System.out.println("Last tweet data:");
@@ -128,7 +132,11 @@ public class Main {
             Tweet tweet = user.lastTweet();
             User twitterUser = user.user();
             if (tweet == null) {
-                System.out.println("\t(" + "-".repeat(PATTERN.length()) + ") https://twitter.com/" + twitterUser.getUsername() + " has no tweets");
+                if (twitterUser.getProtected()) {
+                    System.out.println("\t(" + "-".repeat(PATTERN.length()) + ") https://twitter.com/" + twitterUser.getUsername() + " is protected account");
+                } else {
+                    System.out.println("\t(" + "-".repeat(PATTERN.length()) + ") https://twitter.com/" + twitterUser.getUsername() + " has no tweets");
+                }
             } else {
                 System.out.println("\t(" + tweet.getCreatedAt().format(TIME_FORMATTER) + ") https://twitter.com/" + twitterUser.getUsername() + " last tweet:" + " https://twitter.com/" + twitterUser.getUsername() + "/status/" + tweet.getId());
             }
@@ -144,7 +152,7 @@ public class Main {
         }
     }
 
-    public record UserData(User user, Tweet lastTweet) {
+    public record UserData(User user, Tweet lastTweet, boolean isProtectedUser) {
     }
 
 }
