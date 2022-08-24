@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+group 'com.github.chicoferreira'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.twitter:twitter-api-java-sdk:2.0.2"
+}
