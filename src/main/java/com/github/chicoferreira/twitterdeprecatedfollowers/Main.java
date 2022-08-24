@@ -1,4 +1,4 @@
-package com.github.chicoferreira;
+package com.github.chicoferreira.twitterdeprecatedfollowers;
 
 import com.twitter.clientlib.ApiException;
 import com.twitter.clientlib.TwitterCredentialsBearer;
@@ -144,9 +144,23 @@ public class Main {
     }
 
     public static String loadCredentialsFromFile(String filePath) {
-        URL resource = Main.class.getClassLoader().getResource(filePath);
+        URL location = Main.class.getProtectionDomain().getCodeSource().getLocation();
+        String codeLocation = location.toString();
+
+        Path path = null;
+
+        if (codeLocation.endsWith(".jar")) {
+            System.out.println("Loading credentials from " + filePath + " in jar file folder");
+            path = Path.of(location.getPath()).getParent().resolve(filePath);
+        } else {
+            System.out.println("Loading credentials from " + filePath + " in classpath");
+
+            URL url = Main.class.getClassLoader().getResource(filePath);
+            if (url != null) path = Path.of(url.getPath());
+        }
+
         try {
-            return resource != null ? Files.readString(Path.of(resource.getPath())) : null;
+            return path != null ? Files.readString(path) : null;
         } catch (IOException e) {
             return null;
         }
