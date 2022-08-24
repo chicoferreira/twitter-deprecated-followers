@@ -2,7 +2,10 @@
 
 ## Description
 
-A simple java jar to get the list of inactive followers from Twitter using Twitter SDK for Java.
+A simple java jar to get a sorted list of the most inactive followers from Twitter using Twitter SDK for Java.
+
+<img width="831" alt="preview1" src="https://user-images.githubusercontent.com/36338391/186306545-4720a3c6-815a-4749-93ed-c607a7c83a77.png">
+<img width="829" alt="preview2" src="https://user-images.githubusercontent.com/36338391/186306579-c98e3a06-482a-4606-9189-063e83c396d3.png">
 
 ## Requirements
 
